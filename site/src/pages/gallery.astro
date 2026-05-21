@@ -94,6 +94,7 @@ const stripes = [
         Open-sourced, azd-based scenarios for Microsoft ILT courses.
       </p>
       <div class="relative mx-auto max-w-3xl">
+        <label for="q" class="sr-only">Search the catalog</label>
         <svg class="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.3-4.3"></path>
@@ -753,10 +754,13 @@ const stripes = [
           btn.innerHTML = '✓';
           btn.classList.add('bg-emerald-600');
           btn.classList.remove('bg-brand-blue');
+          const status = document.getElementById('a11y-status');
+          if (status) status.textContent = 'Copied to clipboard';
           setTimeout(() => {
             btn.innerHTML = orig;
             btn.classList.remove('bg-emerald-600');
             btn.classList.add('bg-brand-blue');
+            if (status) status.textContent = '';
           }, 1200);
         } catch (e) {
           console.warn(e);

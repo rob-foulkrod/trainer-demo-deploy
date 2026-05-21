@@ -63,5 +63,16 @@ const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
       <slot />
     </main>
     <Footer />
+
+    {/* Site-wide polite live region for ephemeral status messages
+       (e.g. "Copied to clipboard"). Update by setting textContent
+       on `document.getElementById('a11y-status')`. */}
+    <div
+      id="a11y-status"
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
   </body>
 </html>

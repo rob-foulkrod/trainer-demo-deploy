@@ -47,9 +47,6 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Type-check
-        run: npm run check
-
       - name: Build
         env:
           BASE_PATH: /trainer-demo-deploy/

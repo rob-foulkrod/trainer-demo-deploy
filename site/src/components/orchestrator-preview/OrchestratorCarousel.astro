@@ -131,6 +131,29 @@ const showPips = scripts.length > 1;
       });
 
       /**
+       * Keyboard support per WAI-ARIA tabs pattern: arrow keys move
+       * between pips, Home/End jump to first/last. Auto-advance keeps
+       * running — keyboard activation just retargets it.
+       */
+      const tablist = carousel.querySelector('[role="tablist"]');
+      if (tablist) {
+        const pipEls = Array.from(carousel.querySelectorAll("[data-opx-pip]"));
+        tablist.addEventListener("keydown", (ev) => {
+          const idx = pipEls.indexOf(document.activeElement);
+          if (idx === -1) return;
+          let next = -1;
+          if (ev.key === "ArrowRight" || ev.key === "ArrowDown") next = (idx + 1) % count;
+          else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") next = (idx - 1 + count) % count;
+          else if (ev.key === "Home") next = 0;
+          else if (ev.key === "End") next = count - 1;
+          if (next === -1) return;
+          ev.preventDefault();
+          pipEls[next].focus();
+          setActive(next);
+        });
+      }
+
+      /**
        * Defer the initial kick — the Transcript runtime is a module script
        * (deferred), so it mounts after `DOMContentLoaded`. We need its
        * `opx:play` listener attached before we fire.
