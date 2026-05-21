@@ -66,7 +66,7 @@ const placeholder = "Describe what to build";
   <div
     data-opx-stream
     aria-live="polite"
-    class="flex-1 space-y-3 overflow-y-auto px-3 py-3 text-[13px]"
+    class="opx-stream flex-1 space-y-3 overflow-y-auto px-3 py-3 text-[13px]"
   >
     {steps.map((step, idx) => (
       <div
@@ -141,6 +141,15 @@ const placeholder = "Describe what to build";
 <style>
   @keyframes spin {
     to { transform: rotate(360deg); }
+  }
+  /* Hide the native scrollbar — the stream auto-scrolls programmatically. */
+  .opx-stream {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+  }
+  .opx-stream::-webkit-scrollbar {
+    display: none;
   }
 </style>
 

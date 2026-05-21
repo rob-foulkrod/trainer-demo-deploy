@@ -174,10 +174,16 @@ export function mountTranscript(
 
     await revealStep(el, step);
 
-    // Scroll the new beat into view.
+    /**
+     * Anchor the new beat near the top of the panel so it has the
+     * full panel height to dwell before being pushed off — scrolling
+     * to scrollHeight put it at the bottom edge and it scrolled away
+     * almost immediately.
+     */
     const stream = root.querySelector<HTMLElement>("[data-opx-stream]");
     if (stream) {
-      stream.scrollTo({ top: stream.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+      const targetTop = Math.max(0, el.offsetTop - 12);
+      stream.scrollTo({ top: targetTop, behavior: reduced ? "auto" : "smooth" });
     }
 
     applyAdvances(step);
@@ -188,12 +194,18 @@ export function mountTranscript(
     iteration++;
     reset();
     const speed = script.meta.speed || 1;
+    /**
+     * Global dwell multiplier: keep typing animation at native rate
+     * but stretch the hold and appear gaps so longer code blocks
+     * remain on-screen long enough to scan.
+     */
+    const DWELL_SCALE = 1.4;
     await waitMs((script.meta.startDelay ?? 400) / speed, token);
     for (let i = 0; i < script.steps.length; i++) {
       if (token.cancelled) return;
       const step = script.steps[i]!;
-      const appearAfter = (step.timing?.appearAfter ?? 0) / speed;
-      const holdFor = (step.timing?.holdFor ?? 1400) / speed;
+      const appearAfter = ((step.timing?.appearAfter ?? 0) / speed) * DWELL_SCALE;
+      const holdFor = ((step.timing?.holdFor ?? 1400) / speed) * DWELL_SCALE;
       await waitMs(appearAfter, token);
       await runStep(i, step);
       await waitMs(holdFor, token);
