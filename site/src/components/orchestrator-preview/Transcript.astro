@@ -109,8 +109,11 @@ const placeholder = "Describe what to build";
     <span class="font-mono text-[#3fb950]" data-opx-counter="added">+0</span>
     <span class="font-mono text-[#f85149]" data-opx-counter="removed">-0</span>
     <div class="ml-auto flex items-center gap-1.5">
-      <button class="rounded bg-[#0e639c] px-2.5 py-0.5 text-[11.5px] font-medium text-white">Keep</button>
-      <button class="rounded border border-[#3c3c3c] bg-[#3a3d41] px-2.5 py-0.5 text-[11.5px] font-medium text-neutral-200">Undo</button>
+      {/* Decorative VS Code-style action buttons — part of the fancy
+          graphic, not real controls. Remove from tab order and the
+          accessibility tree. */}
+      <button type="button" tabindex="-1" aria-hidden="true" class="rounded bg-[#0e639c] px-2.5 py-0.5 text-[11.5px] font-medium text-white">Keep</button>
+      <button type="button" tabindex="-1" aria-hidden="true" class="rounded border border-[#3c3c3c] bg-[#3a3d41] px-2.5 py-0.5 text-[11.5px] font-medium text-neutral-200">Undo</button>
       <span class="text-neutral-400">
         <Icon name="clipboard" size={15} />
       </span>
