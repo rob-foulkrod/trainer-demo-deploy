@@ -1,0 +1,55 @@
+---
+import { withBase } from "../../lib/url";
+import ThemeToggle from "./ThemeToggle.astro";
+
+const navItems = [
+  { label: "Catalog", href: withBase("gallery") },
+  { label: "BYOD · Azure", href: withBase("byod-azure") },
+  { label: "BYOD · Copilot Studio", href: withBase("byod-copilot-studio") },
+  { label: "FAQ", href: withBase("faq") },
+  { label: "Contribute", href: withBase("contribute") },
+];
+
+const path = Astro.url.pathname;
+const homePath = withBase("");
+const isActive = (href: string) => {
+  if (href === homePath) return path === href || path === "/";
+  return path === href || path === `${href}/`;
+};
+---
+<header class="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur
+               dark:border-neutral-800 dark:bg-neutral-950/95">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+    <a
+      href={withBase("")}
+      class="flex items-center gap-2.5 font-semibold tracking-tight"
+      aria-label="Trainer Demo Deploy — home"
+    >
+      <span
+        class="inline-block h-6 w-6 rounded-md"
+        style="background: linear-gradient(135deg, #8661c5, #c03bc4);"
+        aria-hidden="true"
+      ></span>
+      <span class="text-[15px] text-neutral-900 dark:text-neutral-100">Trainer Demo Deploy</span>
+    </a>
+
+    <nav class="hidden items-center gap-6 md:flex" aria-label="Primary">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          class:list={[
+            "text-[13.5px] font-medium",
+            isActive(item.href)
+              ? "text-neutral-900 dark:text-neutral-100"
+              : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200",
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <ThemeToggle />
+  </div>
+</header>

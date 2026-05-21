@@ -1,0 +1,192 @@
+---
+/**
+ * OPX Transcript island — the dark chat panel shell + scheduler.
+ *
+ * Server-renders every step beat in its "pending" state inside a
+ * scrollable stream. The inline script at the bottom imports the
+ * runtime and drives the playback.
+ *
+ * Spec: v2-astro/opx-dsl/runtime.md, ../events.md.
+ */
+import type { OpxScript } from "../../lib/opx";
+import UserStep from "./steps/UserStep.astro";
+import AgentStep from "./steps/AgentStep.astro";
+import ToolStep from "./steps/ToolStep.astro";
+import FilesStep from "./steps/FilesStep.astro";
+import SummaryStep from "./steps/SummaryStep.astro";
+import StatusStep from "./steps/StatusStep.astro";
+
+interface Props {
+  script: OpxScript;
+  carouselMode?: boolean;
+  active?: boolean;
+}
+const { script, carouselMode = false, active = true } = Astro.props;
+const { meta, steps } = script;
+const placeholder = "Describe what to build";
+---
+<div
+  data-opx-id={meta.id}
+  data-opx-carousel-mode={carouselMode ? "1" : "0"}
+  class:list={[
+    "opx-transcript relative flex h-[460px] flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#1b1c20] text-neutral-100 shadow-2xl",
+    !active && "pointer-events-none",
+  ]}
+  style={active ? "opacity:1" : "opacity:0"}
+  role="region"
+  aria-label={`Orchestrator preview: ${meta.title}`}
+>
+  {/* Tab strip */}
+  <div class="flex items-center justify-between border-b border-neutral-800 px-3 py-2">
+    <div class="flex items-center">
+      <div class="relative pb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-100">
+        Chat
+        <span class="absolute -bottom-[1px] left-0 right-0 h-[2px] rounded-full bg-[#c03bc4]"></span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-neutral-400">
+      <button type="button" class="hover:text-neutral-200" aria-label="New chat">＋</button>
+      <button type="button" class="hover:text-neutral-200" aria-label="Theme">☀</button>
+      <button type="button" class="hover:text-neutral-200" aria-label="More">⋯</button>
+      <button type="button" class="hover:text-neutral-200" aria-label="Expand">⛶</button>
+      <button type="button" class="hover:text-neutral-200" aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  {/* Sub-header */}
+  <div class="flex items-center justify-between border-b border-neutral-800 px-3 py-2">
+    <div class="flex min-w-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-300">
+      <button class="text-neutral-500 hover:text-neutral-300" aria-label="Back">‹</button>
+      <span class="truncate">{meta.title}</span>
+    </div>
+    <button class="text-neutral-500 hover:text-neutral-300" aria-label="Split pane">⊟</button>
+  </div>
+
+  {/* Transcript stream */}
+  <div
+    data-opx-stream
+    aria-live="polite"
+    class="flex-1 space-y-3 overflow-y-auto px-3 py-3 text-[13px]"
+  >
+    {steps.map((step, idx) => (
+      <div
+        data-opx-step={idx}
+        data-opx-state="pending"
+        style="opacity:0; transform:translateY(8px); transition:opacity 280ms ease-out, transform 280ms ease-out"
+      >
+        {step.user && <UserStep handle={step.user.handle} avatar={step.user.avatar} body={step.user.body} />}
+        {step.agent && <AgentStep body={step.agent.body} code={step.agent.code} />}
+        {step.tool && <ToolStep kind={step.tool.kind} title={step.tool.title} detail={step.tool.detail} result={step.tool.result} />}
+        {step.files && <FilesStep files={step.files} />}
+        {step.summary && <SummaryStep title={step.summary.title} lead={step.summary.lead} bullets={step.summary.bullets} />}
+        {step.status && <StatusStep kind={step.status.kind} text={step.status.text} />}
+      </div>
+    ))}
+  </div>
+
+  {/* Task counter row */}
+  <div class="flex items-center justify-between border-t border-neutral-800 px-3 py-2 text-[12px]">
+    <div class="flex min-w-0 items-center gap-2 text-neutral-300">
+      <span class="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-[#2563eb] border-t-transparent" style="animation: spin 1.4s linear infinite"></span>
+      <span class="truncate">{meta.task.label}</span>
+      <span class="text-neutral-400">
+        (<span data-opx-counter="task-done">0</span>/<span data-opx-counter="task-total">{meta.task.progress[1]}</span>)
+      </span>
+    </div>
+    <button class="text-neutral-500 hover:text-neutral-300" aria-label="Steps">≡</button>
+  </div>
+
+  {/* Diff row */}
+  <div class="flex items-center justify-between border-t border-neutral-800 px-3 py-2 text-[12px]">
+    <div class="flex items-center gap-2 text-neutral-300">
+      <span><span data-opx-counter="files">0</span> files changed</span>
+      <span class="font-mono text-emerald-400" data-opx-counter="added">+0</span>
+      <span class="font-mono text-rose-400" data-opx-counter="removed">-0</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button class="rounded-md bg-[#2563eb] px-2.5 py-1 text-[11.5px] font-medium text-white">Keep</button>
+      <button class="rounded-md border border-neutral-700 bg-neutral-800 px-2.5 py-1 text-[11.5px] font-medium text-neutral-200">Undo</button>
+      <button class="text-neutral-500 hover:text-neutral-300" aria-label="Device">📋</button>
+    </div>
+  </div>
+
+  {/* Composer */}
+  <div class="border-t border-neutral-800 bg-[#16171a]">
+    <div class="flex items-center gap-2 border-b border-neutral-800/60 px-3 py-1.5 text-[12px] text-neutral-400">
+      <span aria-hidden="true">＋</span>
+      <span aria-hidden="true">🌐</span>
+      <span class="italic">Trainer Demo Deploy — Demos, …</span>
+    </div>
+    <div
+      data-opx-composer-body
+      class="min-h-[44px] whitespace-pre-wrap px-3 py-2 text-[13px] text-neutral-300"
+    >{placeholder}</div>
+    <div class="flex items-center justify-between border-t border-neutral-800/60 px-3 py-1.5 text-[11.5px] text-neutral-400">
+      <div class="flex items-center gap-2">
+        <span>＋</span>
+        <span>{meta.agent}</span>
+        <span class="text-neutral-600">|</span>
+        <span>{meta.model}</span>
+        <span class="text-neutral-600">|</span>
+        <span aria-hidden="true">⚙</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span aria-hidden="true">🎙</span>
+        <span aria-hidden="true">■</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .opx-transcript {
+    transition: opacity 400ms ease-in-out;
+  }
+</style>
+
+{/* Embed the parsed script so the bundled <script> can read it without a fetch. */}
+<script
+  type="application/json"
+  data-opx-script-for={meta.id}
+  set:html={JSON.stringify(script)}
+/>
+
+<script>
+  import { mountTranscript } from "./runtime";
+
+  /**
+   * Mount every transcript on the page exactly once. The carousel
+   * controls playback by dispatching `opx:play` events on the
+   * matching root element; standalone transcripts auto-play.
+   */
+  const mounted = new WeakSet<Element>();
+  function mountAll() {
+    const roots = document.querySelectorAll<HTMLElement>("[data-opx-id]");
+    roots.forEach((root) => {
+      if (mounted.has(root)) return;
+      mounted.add(root);
+      const id = root.getAttribute("data-opx-id");
+      const carouselMode = root.getAttribute("data-opx-carousel-mode") === "1";
+      const json = document.querySelector<HTMLScriptElement>(
+        `script[type="application/json"][data-opx-script-for="${id}"]`,
+      );
+      if (!json) return;
+      try {
+        const script = JSON.parse(json.textContent ?? "");
+        const ctl = mountTranscript(root, script, { carouselMode });
+        if (!carouselMode) ctl.play();
+      } catch (err) {
+        console.error("[opx] failed to mount transcript", id, err);
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountAll, { once: true });
+  } else {
+    mountAll();
+  }
+</script>

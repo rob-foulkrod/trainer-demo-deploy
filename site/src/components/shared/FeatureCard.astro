@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  kicker?: string;
+  accent?: "violet" | "blue" | "teal";
+}
+const { title, description, href, kicker, accent = "violet" } = Astro.props;
+
+const accentBg: Record<string, string> = {
+  violet: "from-[#8661c5] to-[#c03bc4]",
+  blue: "from-[#0078d4] to-[#389a91]",
+  teal: "from-[#49c5b1] to-[#389a91]",
+};
+const kickerColor: Record<string, string> = {
+  violet: "text-[#8661c5]",
+  blue: "text-[#0078d4]",
+  teal: "text-[#389a91]",
+};
+---
+<a
+  href={href}
+  class="group block rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm
+         transition-all duration-200 ease-out
+         hover:-translate-y-1 hover:shadow-xl
+         dark:border-neutral-800 dark:bg-neutral-900"
+>
+  <div class={`mb-4 h-1 w-12 rounded-full bg-gradient-to-r ${accentBg[accent]}`}></div>
+  {kicker && (
+    <div class={`mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${kickerColor[accent]}`}>
+      {kicker}
+    </div>
+  )}
+  <h3 class="mb-2 text-lg font-semibold tracking-tight">
+    {title}
+    <span class="ml-1 inline-block transition-transform group-hover:translate-x-1">→</span>
+  </h3>
+  <p class="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{description}</p>
+</a>

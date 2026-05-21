@@ -1,0 +1,35 @@
+---
+/**
+ * Light/dark theme toggle. Outlined pill labelled "Toggle theme" per
+ * approved visual. Initial `.dark` class is set by the inline script
+ * in Base.astro to avoid FOUC.
+ */
+---
+<button
+  type="button"
+  id="theme-toggle"
+  class="rounded-md border border-neutral-300 px-3 py-1.5 text-[12.5px] font-medium text-neutral-700
+         hover:border-neutral-400 hover:bg-neutral-50
+         dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+  aria-label="Toggle color theme"
+>
+  Toggle theme
+</button>
+
+<script>
+  const btn = document.getElementById("theme-toggle");
+  if (btn) {
+    const sync = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      btn.setAttribute("aria-pressed", String(isDark));
+    };
+    sync();
+    btn.addEventListener("click", () => {
+      const root = document.documentElement;
+      const next = root.classList.contains("dark") ? "light" : "dark";
+      root.classList.toggle("dark", next === "dark");
+      try { localStorage.setItem("theme", next); } catch (e) {}
+      sync();
+    });
+  }
+</script>

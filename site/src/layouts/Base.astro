@@ -1,0 +1,52 @@
+---
+/**
+ * Base layout. See v2-astro/new-in-v2.md §Base.astro for the canonical
+ * shape. Inline theme script runs before paint to avoid FOUC.
+ */
+import "../styles/globals.css";
+import Header from "../components/shared/Header.astro";
+import Footer from "../components/shared/Footer.astro";
+import { withBase } from "../lib/url";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const siteTitle = "Microsoft Trainer Demo Deploy";
+const { title, description = "Discover - Create - Contribute" } = Astro.props;
+const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={withBase("img/favicon.ico")} />
+
+    <script is:inline>
+      (function () {
+        try {
+          const stored = localStorage.getItem("theme");
+          const dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+
+    {/* Analytics — ported verbatim from docusaurus.config.js `scripts`. */}
+    <script async src="https://js.monitor.azure.com/scripts/c/ms.analytics-web-4.min.js"></script>
+    <script async src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+  </head>
+  <body class="min-h-screen bg-white text-[#242424] dark:bg-neutral-950 dark:text-neutral-100">
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
