@@ -1,0 +1,38 @@
+meta:
+  id: minimal
+  title: "Minimal example"
+  task:
+    label: "Do the thing"
+    progress: [1, 1]
+  diff:
+    files:   1
+    added:   10
+    removed: 0
+  mode: player
+  loop: true
+  startDelay: 400
+  loopPause: 2200
+
+steps:
+  - user:
+      handle: trainer
+      avatar:
+        initials: tr
+      body: |
+        @workspace Build me the thing.
+    timing: { typing: 1800, holdFor: 1200 }
+
+  - agent:
+      body: |
+        Building the thing now.
+    timing: { appearAfter: 300, typing: 500, holdFor: 1800 }
+
+  - files:
+      - { path: "thing.txt", op: add, lines: 10 }
+    timing:   { appearAfter: 200, holdFor: 1600 }
+    advances: { task: 1, files: 1, added: 10, removed: 0 }
+
+  - status:
+      kind: done
+      text: "Done · 1 file changed"
+    timing: { appearAfter: 200, holdFor: 2000 }
