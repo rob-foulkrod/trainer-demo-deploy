@@ -44,17 +44,6 @@ function waitMs(ms: number, token: CancelToken): Promise<void> {
   });
 }
 
-interface StepBody {
-  user?: { body: string };
-  agent?: { body: string };
-}
-
-function getStepBody(step: OpxStep): StepBody {
-  if (step.user) return { user: { body: step.user.body } };
-  if (step.agent) return { agent: { body: step.agent.body } };
-  return {};
-}
-
 export interface MountOptions {
   /** When true, listen for `opx:play` events (carousel-driven mode). */
   carouselMode?: boolean;
@@ -98,6 +87,10 @@ export function mountTranscript(
       el.style.opacity = "0";
       el.style.transform = "translateY(8px)";
     }
+    // Rewind the stream so the next play starts from the top, not
+    // wherever the previous play left the scroll position.
+    const stream = root.querySelector<HTMLElement>("[data-opx-stream]");
+    if (stream) stream.scrollTop = 0;
     if (composerBody) composerBody.textContent = composerPlaceholder;
     resetCounters();
   }
@@ -140,7 +133,7 @@ export function mountTranscript(
     }
   }
 
-  async function revealStep(stepEl: HTMLElement, _step: OpxStep) {
+  async function revealStep(stepEl: HTMLElement) {
     stepEl.setAttribute("data-opx-state", "active");
     if (reduced) {
       stepEl.style.opacity = "1";
@@ -158,10 +151,9 @@ export function mountTranscript(
     if (!el) return;
     const speed = script.meta.speed || 1;
     const typing = (step.timing?.typing ?? 0) / speed;
-    const body = getStepBody(step);
 
     if (step.user && composerBody && typing > 0 && !reduced) {
-      await typeIntoComposer(body.user!.body, typing);
+      await typeIntoComposer(step.user.body, typing);
       await waitMs(200 / speed, token);
       composerBody.textContent = composerPlaceholder;
     } else if (step.agent && typing > 0 && !reduced) {
@@ -172,18 +164,25 @@ export function mountTranscript(
       if (indicator) indicator.style.opacity = "0";
     }
 
-    await revealStep(el, step);
+    await revealStep(el);
 
     /**
-     * Anchor the new beat near the top of the panel so it has the
-     * full panel height to dwell before being pushed off — scrolling
-     * to scrollHeight put it at the bottom edge and it scrolled away
-     * almost immediately.
+     * Keep the new beat in view by nudging only the stream container
+     * (not the page). `scrollIntoView` would also scroll ancestors,
+     * so we compute the target manually: scroll just enough so the
+     * step's bottom sits at the bottom of the panel. If the step
+     * already fits inside the visible area, do nothing.
      */
     const stream = root.querySelector<HTMLElement>("[data-opx-stream]");
     if (stream) {
-      const targetTop = Math.max(0, el.offsetTop - 12);
-      stream.scrollTo({ top: targetTop, behavior: reduced ? "auto" : "smooth" });
+      const elBottom = el.offsetTop + el.offsetHeight;
+      const viewBottom = stream.scrollTop + stream.clientHeight;
+      if (elBottom > viewBottom) {
+        stream.scrollTo({
+          top: elBottom - stream.clientHeight + 12,
+          behavior: reduced ? "auto" : "smooth",
+        });
+      }
     }
 
     applyAdvances(step);
@@ -199,7 +198,7 @@ export function mountTranscript(
      * but stretch the hold and appear gaps so longer code blocks
      * remain on-screen long enough to scan.
      */
-    const DWELL_SCALE = 1.4;
+    const DWELL_SCALE = 2.2;
     await waitMs((script.meta.startDelay ?? 400) / speed, token);
     for (let i = 0; i < script.steps.length; i++) {
       if (token.cancelled) return;

@@ -1,5 +1,5 @@
 ---
-import { renderParagraph } from "../../../lib/markdown";
+import { renderInlineMarkdown, renderParagraph } from "../../../lib/markdown";
 
 interface Props {
   title: string;
@@ -19,7 +19,7 @@ const { title, lead, bullets = [] } = Astro.props;
       {bullets.length > 0 && (
         <ul class="mt-1 list-inside list-disc space-y-0.5 text-neutral-300">
           {bullets.map((b) => (
-            <li set:html={renderParagraph(b)} />
+            <li set:html={renderInlineMarkdown(b)} />
           ))}
         </ul>
       )}

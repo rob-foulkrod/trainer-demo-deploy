@@ -4,13 +4,16 @@ import FeatureCard from "../components/shared/FeatureCard.astro";
 import OrchestratorCarousel from "../components/orchestrator-preview/OrchestratorCarousel.astro";
 import { withBase } from "../lib/url";
 ---
-<Base title="Microsoft Trainer Demo Deploy">
+<Base
+  title="Microsoft Trainer Demo Deploy"
+  description="A trainer-first catalog of azd templates and bring-your-own-demo scaffolds for Microsoft technical training."
+>
   {/* HERO */}
   <section class="hero-gradient relative">
-    <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 pt-16 pb-20 lg:grid-cols-[1.05fr_0.95fr]">
+    <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 pt-10 pb-10 lg:grid-cols-[1.05fr_0.95fr]">
       <div>
         <span class="inline-block rounded-full bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5b2da9] ring-1 ring-[#8661c5]/20 backdrop-blur dark:bg-neutral-900/60 dark:text-[#c8a9ff] dark:ring-[#8661c5]/30">
-          Spike · Astro 5 + Tailwind v4
+          Microsoft Learning · trainer demos
         </span>
 
         <h1 class="mt-5 text-5xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
@@ -31,17 +34,6 @@ import { withBase } from "../lib/url";
           >
             Browse the catalog →
           </a>
-          <a
-            href="https://github.com/MicrosoftLearning/trainer-demo-deploy"
-            class="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white/70 px-4 py-2.5 text-[13.5px] font-semibold text-neutral-800 backdrop-blur hover:bg-white dark:border-neutral-700 dark:bg-neutral-900/60 dark:text-neutral-100 dark:hover:bg-neutral-900"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            View on GitHub
-          </a>
         </div>
 
         <div class="mt-7 flex flex-wrap items-center gap-2 text-[12px] font-mono text-neutral-700 dark:text-neutral-300">
@@ -58,32 +50,38 @@ import { withBase } from "../lib/url";
   </section>
 
   {/* THREE WAYS IN */}
-  <section class="mx-auto max-w-7xl px-6 pt-12 pb-16">
-    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
+  <section class="mx-auto max-w-7xl px-6 pt-6 pb-16">
+    <div class="mb-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8661c5] dark:text-[#c5b4e3]">
       Three ways in
     </div>
-    <h2 class="mb-8 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+    <h2 class="mb-3 text-center text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl dark:text-neutral-100">
       Pick a path
     </h2>
+    <p class="mx-auto mb-10 max-w-2xl text-center text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+      Start from the curated catalog, or let agents build a brand-new demo with you.
+    </p>
     <div class="grid gap-6 md:grid-cols-3">
       <FeatureCard
-        kicker="Catalog"
-        title="Browse curated azd templates"
-        description="Filter, search, and one-click deploy across AI, data, security, and infrastructure."
+        kicker="Pre-built, ready to deploy"
+        title="Catalog"
+        description="Browse curated demo templates aligned to Microsoft Learn courses. Pick one, run azd up, walk into class with a working demo."
+        cta="Browse the catalog"
         href={withBase("gallery")}
         accent="violet"
       />
       <FeatureCard
-        kicker="BYOD · Azure"
-        title="Generate an Azure scenario"
-        description="Describe a workload — orchestrator drafts Bicep, code, and a presenter runbook end-to-end."
+        kicker="Bring your own demo"
+        title="BYOD — Azure"
+        description="An agentic demo builder powered by GitHub Copilot. Describe the Azure workload you want to teach and let the agents scaffold a working azd template for you."
+        cta="Build an Azure demo"
         href={withBase("byod-azure")}
         accent="blue"
       />
       <FeatureCard
-        kicker="BYOD · Copilot Studio"
-        title="Compose a copilot demo"
-        description="Stitch together topics, knowledge sources, and prebuilt actions for a guided Copilot Studio walk-through."
+        kicker="Bring your own demo"
+        title="BYOD — Copilot Studio"
+        description="The same agentic builder, focused on Copilot Studio. Generate ready-to-import agent solutions, topics, and connectors from a plain-English description."
+        cta="Build a Copilot Studio demo"
         href={withBase("byod-copilot-studio")}
         accent="teal"
       />

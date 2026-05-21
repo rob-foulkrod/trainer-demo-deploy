@@ -46,6 +46,7 @@
   --color-brand-teal-expanded: #389a91;
   --color-brand-teal: #49c5b1;
   --color-brand-blue: #0078d4;
+  --color-brand-blue-dark: #106ebe;
   --color-brand-ink: #242424;
 
   /* Hero gradients consumed via CSS, not utilities. */

@@ -4,56 +4,71 @@
  *
  * Visual reference: v2-astro/reference/gallery.png and the spike at
  * C:/class/TDDSync/us/spike-astro. Data flows from the canonical
- * `static/templates.json` via the `lib/templates` shim.
+ * `static/templates.json` via the `lib/templates` shim. All tag
+ * grouping, labels, and section membership derive from `Tags` in
+ * `src/data/tags.tsx` — no hardcoded ID lists or course regexes.
  */
 import Base from "../layouts/Base.astro";
-import { allTemplates, azdInitCommand, tagMeta } from "../lib/templates";
-import { Tags } from "../data/tags-shim";
+import {
+  allTemplates,
+  azdInitCommand,
+  tagMeta,
+  tagSection,
+  FILTER_SECTIONS,
+  type FilterSection,
+} from "../lib/templates";
+import type { TagType } from "../data/tags-shim";
 
 const data = allTemplates;
 
-const SPECIAL = ["hot", "mct", "msft", "new"] as const;
-
-const tagsInUse = new Set<string>();
+/**
+ * Every tag actually used by the catalog, looked up against the Tags
+ * metadata table. We bucket by `tagSection` (which returns null for
+ * special sentinel tags like hot/new/mct/msft).
+ */
+const tagsInUse = new Set<TagType>();
 data.forEach((t) => t.tags?.forEach((tag) => tagsInUse.add(tag)));
 
-function groupOf(id: string): "special" | "course" | "framework" | "service" {
-  if ((SPECIAL as readonly string[]).includes(id)) return "special";
-  const meta = tagMeta(id as keyof typeof Tags);
-  if (meta?.type === "ILT Courses") return "course";
-  if (meta?.type === "Framework") return "framework";
-  return "service";
+function labelFor(id: TagType): string {
+  return tagMeta(id)?.label ?? id;
 }
 
-function labelFor(id: string): string {
-  const meta = tagMeta(id as keyof typeof Tags);
-  if (meta?.label) return meta.label;
-  if (/^[a-z]{2,3}-\d+$/i.test(id)) return id.toUpperCase();
-  return id.charAt(0).toUpperCase() + id.slice(1);
-}
-
-const groups = {
-  special: [] as string[],
-  course: [] as string[],
-  framework: [] as string[],
-  service: [] as string[],
+type GroupKey = "special" | FilterSection;
+const groups: Record<GroupKey, TagType[]> = {
+  special: [],
+  "Azure Services": [],
+  "ILT Courses": [],
+  Frameworks: [],
 };
-[...tagsInUse].forEach((id) => groups[groupOf(id)].push(id));
-(Object.keys(groups) as (keyof typeof groups)[]).forEach((k) =>
+for (const id of tagsInUse) {
+  const section = tagSection(id);
+  groups[section ?? "special"].push(id);
+}
+(Object.keys(groups) as GroupKey[]).forEach((k) =>
   groups[k].sort((a, b) => labelFor(a).localeCompare(labelFor(b))),
 );
+
+/**
+ * Tag metadata shipped to the client island so the side panel and
+ * search/filter logic can read labels and section membership without
+ * re-implementing the grouping rules.
+ */
+const tagMetaForClient: Record<string, { label: string; section: FilterSection | null }> =
+  Object.fromEntries(
+    [...tagsInUse].map((id) => [id, { label: labelFor(id), section: tagSection(id) }]),
+  );
 
 const authors = [...new Set(data.map((t) => t.author).filter(Boolean))].sort((a, b) =>
   a.localeCompare(b),
 );
 
 const stripes = [
-  "from-[#8661C5] to-[#C03BC4]",
-  "from-[#0078D4] to-[#389A91]",
-  "from-[#49C5B1] to-[#C03BC4]",
-  "from-[#C03BC4] to-[#8661C5]",
-  "from-[#49C5B1] to-[#0078D4]",
-  "from-[#C5B4E3] to-[#8661C5]",
+  "from-brand-violet to-brand-magenta",
+  "from-brand-blue to-brand-teal-expanded",
+  "from-brand-teal to-brand-magenta",
+  "from-brand-magenta to-brand-violet",
+  "from-brand-teal to-brand-blue",
+  "from-brand-violet-tint to-brand-violet",
 ];
 ---
 <Base title="Catalog" description="Browse the curated trainer demo catalog.">
@@ -71,7 +86,7 @@ const stripes = [
     </div>
     <div class="mx-auto max-w-7xl px-6 pt-16 pb-10 text-center">
       <h1 class="mb-3 text-4xl font-semibold tracking-tight md:text-5xl">
-        <span class="bg-gradient-to-r from-[#8661C5] via-[#C03BC4] to-[#8661C5] bg-clip-text text-transparent">
+        <span class="bg-gradient-to-r from-brand-violet via-brand-magenta to-brand-violet bg-clip-text text-transparent">
           Trainer-Demo-Deploy Catalog
         </span>
       </h1>
@@ -87,12 +102,12 @@ const stripes = [
           id="q"
           type="search"
           placeholder="Find your next Azure training demo..."
-          class="w-full rounded-xl border border-neutral-300 bg-white py-3.5 pr-4 pl-12 text-base shadow-sm focus:border-[#8661C5] focus:ring-2 focus:ring-[#8661C5]/30 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-[#C5B4E3]"
+          class="w-full rounded-xl border border-neutral-300 bg-white py-3.5 pr-4 pl-12 text-base shadow-sm focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/30 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
         />
       </div>
       <p class="mx-auto mt-4 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
         Every template deploys with the Azure Developer CLI (azd). New to azd?
-        <a class="text-[#8661C5] hover:underline dark:text-[#C5B4E3]" href="https://aka.ms/azd" target="_blank" rel="noopener">Learn more in the official AZD docs.</a>
+        <a class="text-brand-violet hover:underline" href="https://aka.ms/azd" target="_blank" rel="noopener">Learn more in the official AZD docs.</a>
       </p>
     </div>
   </section>
@@ -102,30 +117,30 @@ const stripes = [
     <aside class="mb-8 space-y-6 md:mb-0 md:w-[240px] md:shrink-0">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold">Filter by</h2>
-        <button id="clear-filters" class="text-xs text-[#8661C5] hover:underline dark:text-[#C5B4E3]">Clear</button>
+        <button id="clear-filters" class="text-xs text-brand-violet hover:underline">Clear</button>
       </div>
 
       <div class="space-y-2">
         {groups.special.map((id) => (
           <label class="flex cursor-pointer items-center gap-2 text-sm">
-            <input type="checkbox" class="tag-cb accent-[#8661C5]" data-tag={id} />
+            <input type="checkbox" class="tag-cb accent-brand-violet" data-tag={id} />
             <span>{labelFor(id)}</span>
           </label>
         ))}
       </div>
 
-      {([["service", "Azure Services"], ["course", "ILT Courses"], ["framework", "Frameworks"]] as const).map(([key, title]) => (
+      {FILTER_SECTIONS.map((section) => (
         <details class="group border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-medium">
-            <span>{title}</span>
+            <span>{section}</span>
             <svg class="h-4 w-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </summary>
           <div class="mt-3 max-h-72 space-y-2 overflow-y-auto pr-2">
-            {groups[key].map((id) => (
+            {groups[section].map((id) => (
               <label class="flex cursor-pointer items-start gap-2 text-sm">
-                <input type="checkbox" class="tag-cb mt-0.5 accent-[#8661C5]" data-tag={id} />
+                <input type="checkbox" class="tag-cb mt-0.5 accent-brand-violet" data-tag={id} />
                 <span class="text-neutral-700 dark:text-neutral-300">{labelFor(id)}</span>
               </label>
             ))}
@@ -143,7 +158,7 @@ const stripes = [
         <div class="mt-3 max-h-72 space-y-2 overflow-y-auto pr-2">
           {authors.map((a) => (
             <label class="flex cursor-pointer items-start gap-2 text-sm">
-              <input type="checkbox" class="author-cb mt-0.5 accent-[#8661C5]" data-author={a} />
+              <input type="checkbox" class="author-cb mt-0.5 accent-brand-violet" data-author={a} />
               <span class="text-neutral-700 dark:text-neutral-300">{a}</span>
             </label>
           ))}
@@ -176,13 +191,13 @@ const stripes = [
           const isHot = t.tags?.includes("hot");
           const isNew = t.tags?.includes("new");
           const azdCmd = azdInitCommand(t);
-          const visibleTags = (t.tags ?? []).filter((tag) => !(SPECIAL as readonly string[]).includes(tag));
+          const visibleTags = (t.tags ?? []).filter((tag) => tagSection(tag) !== null);
           const shownTags = visibleTags.slice(0, 4);
           const overflow = visibleTags.length - shownTags.length;
           const haystack = `${t.title} ${t.description} ${t.author}`.toLowerCase();
           return (
             <article
-              class="card group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[#8661C5]/40 hover:shadow-xl hover:shadow-[#8661C5]/20 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-[#C5B4E3]/40"
+              class="card group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-brand-violet/40 hover:shadow-xl hover:shadow-brand-violet/20 dark:border-neutral-800 dark:bg-neutral-900"
               data-tags={(t.tags ?? []).join(",")}
               data-author={t.author}
               data-title={t.title}
@@ -208,17 +223,17 @@ const stripes = [
                     </span>
                   )}
                   {isMct && !isMtt && (
-                    <span class="inline-flex items-center gap-1.5 font-medium text-[#8661C5] dark:text-[#C5B4E3]">MCT Authored</span>
+                    <span class="inline-flex items-center gap-1.5 font-medium text-brand-violet">MCT Authored</span>
                   )}
                 </div>
                 <div class="flex items-center gap-2 text-xs">
-                  {isHot && <span class="inline-flex items-center gap-1 text-[#C03BC4]">🔥 hot</span>}
-                  {isNew && <span class="inline-flex items-center gap-1 text-[#389A91]">✦ new</span>}
+                  {isHot && <span class="inline-flex items-center gap-1 text-brand-magenta">🔥 hot</span>}
+                  {isNew && <span class="inline-flex items-center gap-1 text-brand-teal-expanded">✦ new</span>}
                 </div>
               </div>
 
               <h3 class="mb-1 text-base leading-tight font-semibold">
-                <a href={t.source ?? t.website ?? "#"} target="_blank" rel="noopener" class="text-[#0078D4] hover:underline dark:text-[#C5B4E3]">
+                <a href={t.source ?? t.website ?? "#"} target="_blank" rel="noopener" class="text-brand-blue hover:underline dark:text-brand-violet-tint">
                   {t.title}
                 </a>
               </h3>
@@ -231,21 +246,21 @@ const stripes = [
               <div class="mb-4 flex flex-wrap gap-1.5">
                 {shownTags.map((tag) => (
                   <span
-                    class="inline-flex max-w-[180px] items-center truncate rounded-full border border-[#C03BC4]/40 px-2 py-0.5 text-[11px] text-[#C03BC4] dark:border-[#C5B4E3]/40 dark:text-[#C5B4E3]"
+                    class="inline-flex max-w-[180px] items-center truncate rounded-full border border-brand-magenta/40 px-2 py-0.5 text-[11px] text-brand-magenta dark:border-brand-violet-tint/40 dark:text-brand-violet-tint"
                     title={labelFor(tag)}
                   >
                     {labelFor(tag)}
                   </span>
                 ))}
                 {overflow > 0 && (
-                  <span class="inline-flex items-center rounded-full bg-[#C03BC4] px-2 py-0.5 text-[11px] text-white">+ {overflow} more</span>
+                  <span class="inline-flex items-center rounded-full bg-brand-magenta px-2 py-0.5 text-[11px] text-white">+ {overflow} more</span>
                 )}
               </div>
 
               {azdCmd && (
                 <div class="mt-auto flex items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 dark:border-neutral-700 dark:bg-neutral-800/60">
                   <code class="flex-1 truncate font-mono text-[12px] text-neutral-700 dark:text-neutral-300">{azdCmd}</code>
-                  <button class="copy-btn inline-flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#0078D4] text-white hover:bg-[#106EBE]" data-copy={azdCmd} aria-label="Copy command">
+                  <button class="copy-btn inline-flex h-7 w-7 shrink-0 items-center justify-center rounded bg-brand-blue text-white hover:bg-brand-blue-dark" data-copy={azdCmd} aria-label="Copy command">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -324,11 +339,11 @@ const stripes = [
             const orig = btn.innerHTML;
             btn.innerHTML = '✓';
             btn.classList.add('bg-emerald-600');
-            btn.classList.remove('bg-[#0078D4]');
+            btn.classList.remove('bg-brand-blue');
             setTimeout(() => {
               btn.innerHTML = orig;
               btn.classList.remove('bg-emerald-600');
-              btn.classList.add('bg-[#0078D4]');
+              btn.classList.add('bg-brand-blue');
             }, 1200);
           } catch (e) {
             console.warn('Clipboard write failed', e);
@@ -361,9 +376,9 @@ const stripes = [
         <h2 id="panel-title" class="text-2xl leading-tight font-semibold"></h2>
         <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
           <span>by</span>
-          <a id="panel-author-link" target="_blank" rel="noopener" class="font-medium text-[#0078D4] hover:underline dark:text-[#C5B4E3]"></a>
+          <a id="panel-author-link" target="_blank" rel="noopener" class="font-medium text-brand-blue hover:underline dark:text-brand-violet-tint"></a>
           <span class="text-neutral-300 dark:text-neutral-600">•</span>
-          <a id="panel-source-link" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[#0078D4] hover:underline dark:text-[#C5B4E3]">
+          <a id="panel-source-link" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-brand-blue hover:underline dark:text-brand-violet-tint">
             View in GitHub
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
           </a>
@@ -378,7 +393,7 @@ const stripes = [
 
     <div class="border-b border-neutral-200 px-6 dark:border-neutral-800">
       <div role="tablist" class="-mb-px flex gap-1">
-        <button data-tab="details" class="panel-tab border-b-2 border-[#8661C5] px-4 py-2.5 text-sm font-medium text-[#8661C5] dark:text-[#C5B4E3]" role="tab" aria-selected="true">Template Details</button>
+        <button data-tab="details" class="panel-tab border-b-2 border-brand-violet px-4 py-2.5 text-sm font-medium text-brand-violet" role="tab" aria-selected="true">Template Details</button>
         <button data-tab="demo" class="panel-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white" role="tab" aria-selected="false">Demo Guide</button>
         <button data-tab="blueprint" class="panel-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white" role="tab" aria-selected="false">Course Blueprint</button>
         <button data-tab="legal" class="panel-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white" role="tab" aria-selected="false">Legal</button>
@@ -391,14 +406,14 @@ const stripes = [
         <hr class="border-neutral-200 dark:border-neutral-800" />
         <div class="grid grid-cols-1 gap-3 text-sm">
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#49C5B1]/15 text-[#389A91]">$</span>
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-teal/15 text-brand-teal-expanded">$</span>
             <div>
               <div class="font-medium text-neutral-900 dark:text-neutral-100">Cost Estimate</div>
               <div id="panel-cost" class="text-neutral-600 dark:text-neutral-400"></div>
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0078D4]/15 text-[#0078D4]">
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-blue/15 text-brand-blue">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             </span>
             <div>
@@ -407,7 +422,7 @@ const stripes = [
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#8661C5]/15 text-[#8661C5]">
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-violet/15 text-brand-violet">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
             </span>
             <div class="min-w-0">
@@ -426,7 +441,7 @@ const stripes = [
       <section data-panel="demo" class="panel-pane hidden p-6">
         <div id="panel-demo-loading" class="hidden text-sm text-neutral-500">Loading demo guide…</div>
         <div id="panel-demo-error" class="hidden text-sm text-red-600"></div>
-        <a id="panel-demo-link" target="_blank" rel="noopener" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0078D4] hover:underline dark:text-[#C5B4E3]">
+        <a id="panel-demo-link" target="_blank" rel="noopener" class="mb-4 inline-flex items-center gap-1 text-sm text-brand-blue hover:underline dark:text-brand-violet-tint">
           Open raw guide
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
         </a>
@@ -441,7 +456,7 @@ const stripes = [
 
       <section data-panel="legal" class="panel-pane hidden space-y-3 p-6 text-sm text-neutral-600 dark:text-neutral-400">
         <p>These templates are community contributions distributed under the licenses declared in their source repositories. Microsoft makes no representations or warranties about them.</p>
-        <p>See the <a id="panel-legal-source" target="_blank" rel="noopener" class="text-[#0078D4] hover:underline dark:text-[#C5B4E3]">source repository</a> for license, code of conduct, and contribution terms.</p>
+        <p>See the <a id="panel-legal-source" target="_blank" rel="noopener" class="text-brand-blue hover:underline dark:text-brand-violet-tint">source repository</a> for license, code of conduct, and contribution terms.</p>
       </section>
     </div>
   </aside>
@@ -468,8 +483,8 @@ const stripes = [
 
   <script
     type="application/json"
-    id="tag-labels-data"
-    set:html={JSON.stringify(Object.fromEntries([...tagsInUse].map((id) => [id, labelFor(id)])))}
+    id="tag-meta-data"
+    set:html={JSON.stringify(tagMetaForClient)}
   />
 
   <script is:inline>
@@ -478,12 +493,16 @@ const stripes = [
       const backdrop = document.getElementById('panel-backdrop');
       const closeBtn = document.getElementById('panel-close');
       const data = JSON.parse(document.getElementById('catalog-data').textContent || '[]');
-      const tagLabels = JSON.parse(document.getElementById('tag-labels-data').textContent || '{}');
+      const tagMeta = JSON.parse(document.getElementById('tag-meta-data').textContent || '{}');
 
       function labelFor(id) {
-        if (tagLabels[id]) return tagLabels[id];
-        if (/^(ai|az|dp|sc|md|ms|pl)-\d+$/i.test(id)) return id.toUpperCase();
-        return id.charAt(0).toUpperCase() + id.slice(1);
+        return tagMeta[id]?.label || id;
+      }
+      function sectionOf(id) {
+        return tagMeta[id]?.section ?? null;
+      }
+      function isSpecial(id) {
+        return sectionOf(id) === null;
       }
 
       function azdSlug(source) {
@@ -506,9 +525,9 @@ const stripes = [
         const isNew = t.tags.includes('new');
         const badges = [];
         if (isMtt) badges.push('<span class="inline-flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300"><svg width="14" height="14" viewBox="0 0 23 23"><rect width="10" height="10" fill="#f25022"/><rect x="12" width="10" height="10" fill="#7fba00"/><rect y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>MTT Authored</span>');
-        else if (isMct) badges.push('<span class="inline-flex items-center gap-1.5 text-[#8661C5] dark:text-[#C5B4E3] font-medium">MCT Authored</span>');
-        if (isHot) badges.push('<span class="inline-flex items-center gap-1 text-[#C03BC4]">🔥 hot</span>');
-        if (isNew) badges.push('<span class="inline-flex items-center gap-1 text-[#389A91]">✦ new</span>');
+        else if (isMct) badges.push('<span class="inline-flex items-center gap-1.5 text-brand-violet font-medium">MCT Authored</span>');
+        if (isHot) badges.push('<span class="inline-flex items-center gap-1 text-brand-magenta">🔥 hot</span>');
+        if (isNew) badges.push('<span class="inline-flex items-center gap-1 text-brand-teal-expanded">✦ new</span>');
         document.getElementById('panel-badges').innerHTML = badges.join('');
 
         document.getElementById('panel-title').textContent = t.title;
@@ -519,9 +538,9 @@ const stripes = [
         sourceA.href = t.source || '#';
         document.getElementById('panel-legal-source').href = t.source || '#';
 
-        const visibleTags = t.tags.filter((tag) => !['hot','mct','msft','new'].includes(tag));
+        const visibleTags = t.tags.filter((tag) => !isSpecial(tag));
         document.getElementById('panel-tags').innerHTML = visibleTags.map((tag) =>
-          `<span class="inline-flex items-center text-xs px-2.5 py-1 rounded-full border border-[#C03BC4]/40 text-[#C03BC4] dark:text-[#C5B4E3] dark:border-[#C5B4E3]/40">${labelFor(tag)}</span>`
+          `<span class="inline-flex items-center text-xs px-2.5 py-1 rounded-full border border-brand-magenta/40 text-brand-magenta dark:text-brand-violet-tint dark:border-brand-violet-tint/40">${labelFor(tag)}</span>`
         ).join('');
 
         document.getElementById('panel-description').textContent = t.description || '';
@@ -530,7 +549,7 @@ const stripes = [
 
         const prereqsEl = document.getElementById('panel-prereqs');
         if (t.prereqs) {
-          prereqsEl.innerHTML = `<a href="${t.prereqs}" target="_blank" rel="noopener" class="text-[#0078D4] dark:text-[#C5B4E3] hover:underline">View scenario-specific prereqs</a>`;
+          prereqsEl.innerHTML = `<a href="${t.prereqs}" target="_blank" rel="noopener" class="text-brand-blue dark:text-brand-violet-tint hover:underline">View scenario-specific prereqs</a>`;
         } else {
           prereqsEl.textContent = 'No additional prereqs declared.';
         }
@@ -543,7 +562,7 @@ const stripes = [
         document.getElementById('panel-commands').innerHTML = cmds.map((c) => `
           <div class="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-md px-3 py-1.5">
             <code class="text-[13px] font-mono text-neutral-700 dark:text-neutral-300 truncate flex-1">${c}</code>
-            <button class="panel-copy shrink-0 inline-flex items-center justify-center w-7 h-7 rounded bg-[#0078D4] hover:bg-[#106EBE] text-white" data-copy="${c}" aria-label="Copy">
+            <button class="panel-copy shrink-0 inline-flex items-center justify-center w-7 h-7 rounded bg-brand-blue hover:bg-brand-blue-dark text-white" data-copy="${c}" aria-label="Copy">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
           </div>
@@ -557,7 +576,7 @@ const stripes = [
         demoLoadedFor = -1;
 
         const ul = document.getElementById('panel-courses');
-        const courses = t.tags.filter((tag) => /^(ai|az|dp|sc|md|ms|pl)-\d+$/i.test(tag));
+        const courses = t.tags.filter((tag) => sectionOf(tag) === 'ILT Courses');
         ul.innerHTML = courses.map((c) => `<li><span class="font-mono">${c.toUpperCase()}</span> — ${labelFor(c)}</li>`).join('');
         document.getElementById('panel-courses-empty').classList.toggle('hidden', courses.length > 0);
 
@@ -581,9 +600,8 @@ const stripes = [
         document.querySelectorAll('.panel-tab').forEach((btn) => {
           const active = btn.dataset.tab === name;
           btn.setAttribute('aria-selected', active ? 'true' : 'false');
-          btn.classList.toggle('border-[#8661C5]', active);
-          btn.classList.toggle('text-[#8661C5]', active);
-          btn.classList.toggle('dark:text-[#C5B4E3]', active);
+          btn.classList.toggle('border-brand-violet', active);
+          btn.classList.toggle('text-brand-violet', active);
           btn.classList.toggle('border-transparent', !active);
           btn.classList.toggle('text-neutral-600', !active);
           btn.classList.toggle('dark:text-neutral-400', !active);
@@ -671,11 +689,11 @@ const stripes = [
           const orig = btn.innerHTML;
           btn.innerHTML = '✓';
           btn.classList.add('bg-emerald-600');
-          btn.classList.remove('bg-[#0078D4]');
+          btn.classList.remove('bg-brand-blue');
           setTimeout(() => {
             btn.innerHTML = orig;
             btn.classList.remove('bg-emerald-600');
-            btn.classList.add('bg-[#0078D4]');
+            btn.classList.add('bg-brand-blue');
           }, 1200);
         } catch (e) {
           console.warn(e);

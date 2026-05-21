@@ -111,3 +111,31 @@ Use option 1.
 - A failed `deploy.yml` posts to the repo's GitHub Discussions
   "Releases" category. (Wire up later if needed.)
 - A failed `validate-opx.yml` blocks PR merge via branch protection.
+
+## Future validation jobs (backlog)
+
+Not blocking v2 launch. Each is small, fail-fast, and runs on
+`pull_request` to catch data and content drift before merge.
+
+- **`validate:catalog`** — Lint `static/templates.json` against the
+  `TagType` union in `src/data/tags.tsx`. Fail on any tag that isn't a
+  key in `Tags` (catches casing typos like `AZ-204` vs `az-204`, the
+  bug fixed in May 2026). Also flag duplicate tag IDs, missing
+  required fields (`title`, `source`, `tags`, `cost`, `deploytime`),
+  and tag arrays that don't include at least one ILT-course tag per
+  `templates-json.instructions.md`.
+- **`validate:opx`** — Zod-based YAML validator for OPX scenarios.
+  Already referenced in workflow table; needs the script at
+  `site/scripts/validate-opx.mjs`.
+- **`check:links`** — Post-build internal-link checker over
+  `site/dist/`. Fails on broken `<a href="/...">` and missing image
+  paths.
+- **`test:unit`** — Vitest suite for `lib/templates.ts`
+  (`azdInitCommand`, `filterTemplates`, `tagSection`) and `lib/opx.ts`
+  schema.
+- **`a11y:lint`** — Axe or `pa11y-ci` smoke run against the six built
+  pages on every PR.
+
+When wiring these up, prefer one composite workflow (`test.yml`) that
+runs all checks in parallel jobs over many small workflows — keeps the
+PR checks list readable.
