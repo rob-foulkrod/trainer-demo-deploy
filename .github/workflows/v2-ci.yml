@@ -1,26 +1,26 @@
-name: v2 Preview - Build & Deploy
+name: v2 CI (PR)
 
 on:
-  push:
+  pull_request:
     branches:
       - v2
     paths:
       - "site/**"
       - "src/data/**"
       - "static/**"
+      - ".github/workflows/v2-ci.yml"
       - ".github/workflows/v2-preview.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: v2-preview-pages
+  group: v2-ci-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build v2 site
+    name: Validate, test, and build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,23 +60,3 @@ jobs:
         env:
           BASE_PATH: /trainer-demo-deploy/
         run: npm run check:links
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site/dist
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
