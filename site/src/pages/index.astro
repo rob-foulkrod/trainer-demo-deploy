@@ -3,11 +3,24 @@ import Base from "../layouts/Base.astro";
 import FeatureCard from "../components/shared/FeatureCard.astro";
 import OrchestratorCarousel from "../components/orchestrator-preview/OrchestratorCarousel.astro";
 import { withBase } from "../lib/url";
+
+// Back-compat: the v1 site hosted the catalog at `/` and used `?name=`,
+// `?tags=`, and `?authors=` query params. External links predate the
+// move to /gallery/, so we forward those queries to the new page.
+const galleryHref = withBase("gallery/");
 ---
 <Base
   title="Microsoft Trainer Demo Deploy"
   description="A trainer-first catalog of azd templates and bring-your-own-demo scaffolds for Microsoft technical training."
 >
+  <script is:inline define:vars={{ galleryHref }}>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('name') || params.has('tags') || params.has('authors')) {
+        window.location.replace(galleryHref + window.location.search + window.location.hash);
+      }
+    })();
+  </script>
   {/* HERO */}
   <section class="hero-gradient relative">
     <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 pt-10 pb-10 lg:grid-cols-[1.05fr_0.95fr]">

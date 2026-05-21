@@ -286,6 +286,34 @@ const stripes = [
       const authorCbs = document.querySelectorAll('.author-cb');
       const cards = Array.from(grid.querySelectorAll('.card'));
 
+      // Shareable URL: mirrors the original site's query params so links
+      // like /gallery/?name=networking, /gallery/?tags=azd&tags=appservice,
+      // and /gallery/?authors=Jane%20Doe deep-link to a filtered view.
+      const SEARCH_PARAM = 'name';
+      const TAGS_PARAM = 'tags';
+      const AUTHORS_PARAM = 'authors';
+
+      function syncUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const term = (q.value || '').trim();
+        if (term) params.set(SEARCH_PARAM, term);
+        else params.delete(SEARCH_PARAM);
+
+        params.delete(TAGS_PARAM);
+        Array.from(tagCbs)
+          .filter((c) => c.checked)
+          .forEach((c) => params.append(TAGS_PARAM, c.dataset.tag));
+
+        params.delete(AUTHORS_PARAM);
+        Array.from(authorCbs)
+          .filter((c) => c.checked)
+          .forEach((c) => params.append(AUTHORS_PARAM, c.dataset.author));
+
+        const qs = params.toString();
+        const next = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+        window.history.replaceState(null, '', next);
+      }
+
       function apply() {
         const term = (q.value || '').trim().toLowerCase();
         const selectedTags = Array.from(tagCbs).filter((c) => c.checked).map((c) => c.dataset.tag);
@@ -318,15 +346,29 @@ const stripes = [
         sorted.forEach((c) => grid.appendChild(c));
       }
 
-      q?.addEventListener('input', apply);
-      tagCbs.forEach((cb) => cb.addEventListener('change', apply));
-      authorCbs.forEach((cb) => cb.addEventListener('change', apply));
+      q?.addEventListener('input', () => {
+        syncUrl();
+        apply();
+      });
+      tagCbs.forEach((cb) =>
+        cb.addEventListener('change', () => {
+          syncUrl();
+          apply();
+        }),
+      );
+      authorCbs.forEach((cb) =>
+        cb.addEventListener('change', () => {
+          syncUrl();
+          apply();
+        }),
+      );
       sort?.addEventListener('change', applySort);
 
       document.getElementById('clear-filters')?.addEventListener('click', () => {
         q.value = '';
         tagCbs.forEach((cb) => (cb.checked = false));
         authorCbs.forEach((cb) => (cb.checked = false));
+        syncUrl();
         apply();
       });
 
@@ -350,6 +392,27 @@ const stripes = [
           }
         });
       });
+
+      // Prefill from query string so external shareable URLs deep-link
+      // into a filtered view. Unknown tags/authors in the URL are simply
+      // ignored — the matching checkbox won't be found.
+      const initialParams = new URLSearchParams(window.location.search);
+      const initialName = initialParams.get(SEARCH_PARAM);
+      if (q && initialName) q.value = initialName;
+
+      const initialTags = new Set(initialParams.getAll(TAGS_PARAM));
+      if (initialTags.size) {
+        tagCbs.forEach((cb) => {
+          if (initialTags.has(cb.dataset.tag)) cb.checked = true;
+        });
+      }
+
+      const initialAuthors = new Set(initialParams.getAll(AUTHORS_PARAM));
+      if (initialAuthors.size) {
+        authorCbs.forEach((cb) => {
+          if (initialAuthors.has(cb.dataset.author)) cb.checked = true;
+        });
+      }
 
       apply();
     })();
