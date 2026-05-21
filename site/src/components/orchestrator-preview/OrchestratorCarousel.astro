@@ -40,7 +40,7 @@ const showPips = scripts.length > 1;
           class="opx-slide transition-opacity duration-300"
           style={`opacity:${i === startIndex ? 1 : 0}; ${i === startIndex ? "" : "pointer-events:none;"}`}
         >
-          <Transcript script={s} carouselMode={true} active={i === startIndex} />
+          <Transcript script={s} carouselMode={true} />
         </div>
       ))
     )}

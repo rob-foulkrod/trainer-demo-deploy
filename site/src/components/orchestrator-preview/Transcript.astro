@@ -19,20 +19,20 @@ import StatusStep from "./steps/StatusStep.astro";
 interface Props {
   script: OpxScript;
   carouselMode?: boolean;
-  active?: boolean;
 }
-const { script, carouselMode = false, active = true } = Astro.props;
+const { script, carouselMode = false } = Astro.props;
 const { meta, steps } = script;
 const placeholder = "Describe what to build";
 ---
+{/*
+  Opacity is controlled by the parent slide wrapper in carousel mode so the
+  carousel can cross-fade across instances. Standalone transcripts inherit
+  the parent's natural opacity (1).
+*/}
 <div
   data-opx-id={meta.id}
   data-opx-carousel-mode={carouselMode ? "1" : "0"}
-  class:list={[
-    "opx-transcript relative flex h-[460px] flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#1b1c20] text-neutral-100 shadow-2xl",
-    !active && "pointer-events-none",
-  ]}
-  style={active ? "opacity:1" : "opacity:0"}
+  class="opx-transcript relative flex h-[460px] flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#1b1c20] text-neutral-100 shadow-2xl"
   role="region"
   aria-label={`Orchestrator preview: ${meta.title}`}
 >
@@ -141,9 +141,6 @@ const placeholder = "Describe what to build";
 <style>
   @keyframes spin {
     to { transform: rotate(360deg); }
-  }
-  .opx-transcript {
-    transition: opacity 400ms ease-in-out;
   }
 </style>
 
