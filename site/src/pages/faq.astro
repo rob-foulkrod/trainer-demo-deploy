@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
 
 const sections = [
   { id: "what-is-azd",         title: "What is azd?" },
@@ -126,7 +127,7 @@ const sections = [
 
           <h3 class="text-lg font-semibold mt-5 mb-2">Using this catalog</h3>
           <p class="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            Each template in the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href="/gallery/">catalog</a> is associated with:
+            Each template in the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href={withBase("gallery")}>catalog</a> is associated with:
           </p>
           <ul class="mt-2 ml-6 list-disc space-y-1 text-neutral-700 dark:text-neutral-300">
             <li>Architecture diagram</li>
@@ -168,7 +169,7 @@ const sections = [
             <code class="px-1 rounded bg-neutral-100 dark:bg-neutral-800 text-[0.9em]">tdd-azd-…</code>; the metadata feeds the azd KPI reports.
           </p>
           <p class="mt-3 text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            See the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href="/contribute/">Contributor Guide</a> for the full
+            See the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href={withBase("contribute")}>Contributor Guide</a> for the full
             step-by-step PR workflow.
           </p>
 
@@ -193,7 +194,7 @@ const sections = [
                  href="https://github.com/MicrosoftLearning/trainer-demo-deploy/issues" target="_blank" rel="noopener">list of open issues</a>.
             </li>
             <li><strong>Add a complete demo scenario</strong> — follow the steps in
-              <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href="/contribute/">Contribute a template</a>.
+              <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href={withBase("contribute")}>Contribute a template</a>.
             </li>
             <li><strong>Improve an existing scenario</strong> — open an issue on the scenario's repo (linked from its catalog card)
               or on this repo.</li>

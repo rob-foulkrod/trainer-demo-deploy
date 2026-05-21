@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
 
 const steps = [
   {
@@ -238,7 +239,7 @@ const steps = [
         Questions? Open a
         <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2"
            href="https://github.com/MicrosoftLearning/trainer-demo-deploy/discussions" target="_blank" rel="noopener">discussion</a>
-        or browse the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href="/faq/">FAQ</a>.
+        or browse the <a class="text-[#0078D4] dark:text-[#C5B4E3] underline underline-offset-2" href={withBase("faq")}>FAQ</a>.
       </p>
     </div>
   </section>
