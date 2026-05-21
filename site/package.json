@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview --port 4321",
     "check": "astro check",
-    "validate:opx": "node ./scripts/validate-opx.mjs",
+    "validate:opx": "node --experimental-strip-types --no-warnings ./scripts/validate-opx.mjs",
     "check:links": "node ./scripts/check-links.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,7 +17,7 @@
     "format": "prettier --write ."
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.6.0"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

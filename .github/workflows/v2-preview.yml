@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: site/package-lock.json
 
@@ -43,11 +43,22 @@ jobs:
       - name: Install
         run: npm install --no-audit --no-fund --prefer-offline
 
+      - name: Validate OPX scripts
+        run: npm run validate:opx
+
+      - name: Run unit tests
+        run: npm test
+
       - name: Build
         env:
           BASE_PATH: /trainer-demo-deploy/
           SITE_URL: https://${{ github.repository_owner }}.github.io
         run: npm run build
+
+      - name: Check internal links
+        env:
+          BASE_PATH: /trainer-demo-deploy/
+        run: npm run check:links
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
