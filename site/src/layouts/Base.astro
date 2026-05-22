@@ -1,7 +1,6 @@
 ---
 /**
- * Base layout. See v2-astro/new-in-v2.md §Base.astro for the canonical
- * shape. Inline theme script runs before paint to avoid FOUC.
+ * Base layout. Inline theme script runs before paint to avoid FOUC.
  */
 import "../styles/globals.css";
 import Header from "../components/shared/Header.astro";
@@ -16,6 +15,13 @@ interface Props {
 const siteTitle = "Microsoft Trainer Demo Deploy";
 const { title, description = "Discover - Create - Contribute" } = Astro.props;
 const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
+
+// Canonical URL: absolute when SITE_URL is set (production builds),
+// otherwise omit so dev builds don't bake `localhost:4321` into pages.
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const ogImage = Astro.site
+  ? new URL(withBase("img/coverBackgroundLight_new.png"), Astro.site).href
+  : undefined;
 ---
 <!doctype html>
 <html lang="en">
@@ -24,6 +30,7 @@ const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <link rel="icon" href={withBase("img/favicon.ico")} />
 
     {/* Open Graph / Twitter — minimal set so cards render with the right title. */}
@@ -31,9 +38,12 @@ const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
     <meta property="og:site_name" content={siteTitle} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
 
     <script is:inline>
       (function () {
@@ -66,7 +76,11 @@ const fullTitle = title === siteTitle ? title : `${title} · ${siteTitle}`;
 
     {/* Site-wide polite live region for ephemeral status messages
        (e.g. "Copied to clipboard"). Update by setting textContent
-       on `document.getElementById('a11y-status')`. */}
+       on `document.getElementById('a11y-status')`.
+
+       Callers should debounce rapid updates (e.g. clear-then-set with
+       a microtask gap, or coalesce within ~200ms) so multiple events
+       fired in quick succession don't stampede the screen reader. */}
     <div
       id="a11y-status"
       class="sr-only"

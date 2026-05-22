@@ -2,11 +2,10 @@
 /**
  * Catalog page. Hero + filter rail + card grid + side panel.
  *
- * Visual reference: v2-astro/reference/gallery.png and the spike at
- * C:/class/TDDSync/us/spike-astro. Data flows from the canonical
- * `static/templates.json` via the `lib/templates` shim. All tag
- * grouping, labels, and section membership derive from `Tags` in
- * `src/data/tags.tsx` — no hardcoded ID lists or course regexes.
+ * Data flows from the canonical `static/templates.json` via the
+ * `lib/templates` shim. All tag grouping, labels, and section
+ * membership derive from `Tags` in `src/data/tags.tsx` — no
+ * hardcoded ID lists or course regexes.
  */
 import Base from "../layouts/Base.astro";
 import {
@@ -742,7 +741,36 @@ const stripes = [
       closeBtn.addEventListener('click', closePanel);
       backdrop.addEventListener('click', closePanel);
       document.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape' && !panel.classList.contains('translate-x-full')) closePanel();
+        if (panel.classList.contains('translate-x-full')) return;
+        if (ev.key === 'Escape') {
+          closePanel();
+          return;
+        }
+        if (ev.key !== 'Tab') return;
+
+        // Focus trap — keep keyboard focus inside the modal panel
+        // while it's open. WCAG 2.4.3 + ARIA dialog pattern.
+        const focusables = panel.querySelectorAll(
+          'a[href], button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+        );
+        const visible = Array.from(focusables).filter(
+          (el) => !el.hasAttribute('hidden') && el.offsetParent !== null
+        );
+        if (visible.length === 0) {
+          ev.preventDefault();
+          panel.focus();
+          return;
+        }
+        const first = visible[0];
+        const last = visible[visible.length - 1];
+        const active = document.activeElement;
+        if (ev.shiftKey && (active === first || active === panel)) {
+          ev.preventDefault();
+          last.focus();
+        } else if (!ev.shiftKey && active === last) {
+          ev.preventDefault();
+          first.focus();
+        }
       });
 
       document.getElementById('panel-commands').addEventListener('click', async (ev) => {
