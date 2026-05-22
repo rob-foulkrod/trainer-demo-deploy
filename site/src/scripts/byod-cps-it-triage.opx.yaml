@@ -66,13 +66,13 @@ steps:
     advances: { task: 5, files: 7, added: 228 }
 
   - summary:
-      title: "Generated 14 files: topics, knowledge sources, and demo runbook"
+      title: "Generated 14 files: topics, knowledge sources, and demo guide"
       lead: "Your agent includes:"
       bullets:
         - "5 topics covering classify, lookup, and escalate paths"
         - "SharePoint knowledge source binding"
         - "Microsoft Teams channel setup"
-        - "Trainer runbook with 3 scripted prompts"
+        - "Trainer demo guide with 3 scripted prompts"
     timing: { appearAfter: 300, holdFor: 2400 }
     advances: { task: 3, files: 6, added: 60 }
 
