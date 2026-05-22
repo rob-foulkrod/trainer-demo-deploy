@@ -23,7 +23,7 @@ steps:
         initials: tr
         gradient: ["#0078D4", "#8661C5"]
       body: |
-        @workspace Build me an Azure Container Apps demo with Service Bus producer and KEDA scaling. Target AZ-204.
+        Build me an Azure Container Apps demo with Service Bus producer and KEDA scaling. Target AZ-204.
     timing: { typing: 2200, holdFor: 1400 }
 
   - agent:

@@ -23,7 +23,7 @@ steps:
         initials: tr
         gradient: ["#8661C5", "#c03bc4"]
       body: |
-        @workspace Build me a Copilot Studio IT-Triage agent with knowledge lookup and an escalation topic.
+        Build me a Copilot Studio IT-Triage agent with knowledge lookup and an escalation topic.
     timing: { typing: 2200, holdFor: 1400 }
 
   - agent:

@@ -23,7 +23,7 @@ steps:
         initials: te
         gradient: ["#0078D4", "#49C5B1"]
       body: |
-        @workspace Exercise every step kind, including **bold**, _italic_, `code`, and [a link](https://learn.microsoft.com).
+        Exercise every step kind, including **bold**, _italic_, `code`, and [a link](https://learn.microsoft.com).
     timing: { typing: 1800, holdFor: 1400 }
 
   - agent:
