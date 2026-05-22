@@ -229,7 +229,12 @@ describe("parseOpx — field-level rejections", () => {
 
   it("rejects a malformed hex gradient color", () => {
     const obj = validScript();
-    obj.steps[0].user!.avatar.gradient = ["not-a-color", "#8661C5"] as [string, string];
+    // `gradient` is optional on AvatarSchema; the fixture omits it, so
+    // poke it onto the inferred shape via an index assignment.
+    (obj.steps[0].user!.avatar as Record<string, unknown>).gradient = [
+      "not-a-color",
+      "#8661C5",
+    ];
     expect(() => parseOpx(obj)).toThrow(ZodError);
   });
 

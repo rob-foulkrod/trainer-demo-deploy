@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { TagType } from "../data/tags-shim";
 import {
   allTemplates,
   azdInitCommand,
@@ -19,7 +20,7 @@ const sample = (over: Partial<Template> = {}): Template => ({
   author: "Test Author",
   source: "https://github.com/petender/tdd-azd-starter",
   demoguide: null,
-  tags: ["azd"],
+  tags: ["functions"],
   cost: "$",
   deploytime: "5 min",
   ...over,
@@ -62,8 +63,8 @@ describe("azdInitCommand", () => {
 
 describe("filterTemplates", () => {
   const data: Template[] = [
-    sample({ title: "Azure Function Hub", description: "serverless", tags: ["azure-functions"], author: "Alice" }),
-    sample({ title: "Static Web App", description: "frontend hosting", tags: ["azd"], author: "Bob, Carol" }),
+    sample({ title: "Azure Function Hub", description: "serverless", tags: ["openai"], author: "Alice" }),
+    sample({ title: "Static Web App", description: "frontend hosting", tags: ["functions"], author: "Bob, Carol" }),
     sample({ title: "Kubernetes Cluster", description: "container orchestration", tags: ["aks"], author: "Dan" }),
   ];
 
@@ -87,7 +88,7 @@ describe("filterTemplates", () => {
   });
 
   it("filters by tags using OR-within-list semantics", () => {
-    const out = filterTemplates(data, { tags: ["azd", "aks"] }).map((t) => t.title);
+    const out = filterTemplates(data, { tags: ["functions", "aks"] }).map((t) => t.title);
     expect(out).toEqual(["Static Web App", "Kubernetes Cluster"]);
   });
 
@@ -102,7 +103,7 @@ describe("filterTemplates", () => {
     expect(out).toHaveLength(1);
     expect(out[0].title).toBe("Kubernetes Cluster");
 
-    expect(filterTemplates(data, { search: "container", tags: ["azd"] })).toHaveLength(0);
+    expect(filterTemplates(data, { search: "container", tags: ["functions"] })).toHaveLength(0);
   });
 });
 
@@ -119,7 +120,9 @@ describe("tagSection", () => {
   });
 
   it("returns null for unknown tags", () => {
-    expect(tagSection("definitely-not-a-tag-xyz")).toBeNull();
+    // Cast: the test exercises the runtime branch where the input is
+    // outside the union; the compile-time check is the whole point.
+    expect(tagSection("definitely-not-a-tag-xyz" as TagType)).toBeNull();
   });
 });
 
