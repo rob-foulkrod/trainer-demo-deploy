@@ -9,7 +9,6 @@
  * unprefixed absolute path (`/foo` instead of `/<BASE_PATH>/foo`) when
  * `BASE_PATH` is set — those would 404 once deployed to GitHub Pages.
  *
- * Spec: ../../v2-astro/quality/test-plan.md §"link-check".
  * Run via `npm run check:links`.
  */
 import { readFile, readdir, stat } from "node:fs/promises";

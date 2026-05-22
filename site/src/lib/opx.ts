@@ -1,8 +1,6 @@
 /**
  * OPX v1 schema (Zod) + script loader.
  *
- * Spec: ../../v2-astro/opx-dsl/schema.md (authoritative).
- *
  * The runtime imports the parsed/validated OPX object via `loadScript`
  * or `loadAllScripts`. Both return `OpxScript`. Validation errors are
  * thrown synchronously with line-aware messages where possible.

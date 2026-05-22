@@ -37,7 +37,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
- * Brand tokens — see v2-astro/new-in-v2.md §Tailwind theme
+ * Brand tokens
  * -------------------------------------------------------------------------*/
 @theme {
   --color-brand-violet: #8661c5;

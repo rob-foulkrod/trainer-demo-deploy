@@ -1,8 +1,6 @@
 /**
  * Catalog data: load `static/templates.json` (the single source of
  * truth) plus sort/filter helpers used by `/gallery`.
- *
- * Spec: ../../v2-astro/product/catalog.md
  */
 import templatesJson from "../../../static/templates.json";
 import { Tags } from "../data/tags-shim";

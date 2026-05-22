@@ -4,8 +4,6 @@
  * Validate every `*.opx.yaml` script under `src/scripts/` against the
  * v1 schema in `../src/lib/opx.ts`.
  *
- * Spec: ../../v2-astro/opx-dsl/validation.md (authoritative).
- *
  * Outputs line-aware errors and exits non-zero on any failure. Run via
  * `npm run validate:opx`. Runtime requires `--experimental-strip-types`
  * (Node 22.6+) so we can import the TypeScript schema directly without

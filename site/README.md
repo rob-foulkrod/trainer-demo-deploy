@@ -1,12 +1,12 @@
 # Site (v2 — Astro)
 
 This folder is the v2 implementation of
-<https://microsoftlearning.github.io/trainer-demo-deploy/>, built per the
-specification in [`../v2-astro/`](../v2-astro/).
+<https://microsoftlearning.github.io/trainer-demo-deploy/>.
 
-It lives in parallel to the legacy Docusaurus tree (repo root + `src/`)
-during Phase 1. At cutover, Docusaurus is removed and this folder either
-becomes the repo root or its contents move up one level.
+It currently lives in parallel to the legacy Docusaurus tree (repo
+root + `src/`). After production cutover the legacy tree will be moved
+under `legacy/` and this folder either becomes the repo root or its
+contents move up one level.
 
 ## Quick start
 
@@ -81,12 +81,13 @@ site/
         └── globals.css              # Tailwind v4 entry + @theme tokens
 ```
 
-See the spec under [`../v2-astro/`](../v2-astro/) for normative
-behavior. Things to be aware of:
+Things to be aware of:
 
 - **Never** hard-code absolute paths starting with `/`. Use
   `withBase(path)` from `src/lib/url.ts` or `import.meta.env.BASE_URL`.
 - **OPX counter math is enforced.** `sum(advances.*) === meta.*`.
   Validation fails CI.
-- **Use `npm install`, not `npm ci`.** See
-  [`../v2-astro/delivery/npm-policy.md`](../v2-astro/delivery/npm-policy.md).
+- **Use `npm install`, not `npm ci`.** The lockfile is generated on
+  Windows and is missing the Linux-only optional binaries for rollup
+  and esbuild; `npm install` reconciles the lockfile to the runner's
+  platform without aborting.

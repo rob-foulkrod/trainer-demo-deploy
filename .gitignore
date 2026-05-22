@@ -32,3 +32,4 @@ yarn-error.log*
 /v1-*.png
 /v2-*.png
 /opx-*.png
+site/check.log

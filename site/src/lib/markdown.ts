@@ -2,7 +2,7 @@
  * Tiny inline-only markdown renderer for OPX bodies, status text,
  * tool details, etc.
  *
- * Supported syntax — see ../../v2-astro/opx-dsl/schema.md §Markdown subset:
+ * Supported syntax:
  *   `code`              → <code>
  *   **bold**            → <strong>
  *   _italic_            → <em>

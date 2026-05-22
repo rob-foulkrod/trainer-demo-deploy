@@ -3,8 +3,7 @@
  * catalog source-of-truth file at the repo root (`src/data/tags.tsx`).
  *
  * The original file has a `.tsx` extension but contains no JSX. We
- * keep it in place during Phase 1 per `v2-astro/sources-of-truth.md`
- * and import through this shim so site-side modules use a stable,
+ * import through this shim so site-side modules use a stable,
  * JSX-free module specifier.
  */
 export { Tags } from "../../../src/data/tags.tsx";

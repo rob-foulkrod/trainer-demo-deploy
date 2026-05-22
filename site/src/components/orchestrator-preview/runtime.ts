@@ -1,6 +1,5 @@
 /**
  * OPX runtime — player loop, scheduler, counter ticker.
- * See v2-astro/opx-dsl/runtime.md for the canonical spec.
  *
  * The Transcript island server-renders the chrome + every step beat in
  * its "pending" state. This module flips beats from pending → active →
