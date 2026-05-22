@@ -162,7 +162,9 @@ const placeholder = "Describe what to build";
   }
 </style>
 
-{/* Embed the parsed script so the bundled <script> can read it without a fetch. */}
+{/* Embed the parsed script as JSON so the mount code below can read
+    it from the DOM without a fetch. Keep this above the type=module
+    block so document.querySelector finds it on first run. */}
 <script
   type="application/json"
   data-opx-script-for={meta.id}
