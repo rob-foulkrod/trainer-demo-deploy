@@ -1,21 +1,15 @@
-name: v2 Preview - Build & Deploy
+name: v2 - Build & Deploy (manual)
 
+# Deployment is manual only. Run from the Actions tab → "Run workflow".
+# Restore a `push:` trigger later if automatic deploys are desired again.
 on:
-  push:
-    branches:
-      - v2
-    paths:
-      - "site/**"
-      - "src/data/**"
-      - "static/**"
-      - ".github/workflows/v2-preview.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: v2-preview-pages
+  group: v2-deploy-pages
   cancel-in-progress: true
 
 jobs:
@@ -77,3 +71,24 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Smoke test — confirm Pages is actually serving the v2 build.
+      # Retries because Pages occasionally takes a few seconds to flip
+      # over to the new artifact after `deploy-pages` reports success.
+      - name: Smoke test live site
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          echo "Probing $PAGE_URL"
+          for attempt in 1 2 3 4 5; do
+            body=$(curl -fsSL --max-time 20 "$PAGE_URL" || true)
+            if echo "$body" | grep -q 'name="generator" content="Astro'; then
+              echo "OK: Astro-generated v2 page is live."
+              exit 0
+            fi
+            echo "Attempt $attempt: marker not found yet, sleeping 10s..."
+            sleep 10
+          done
+          echo "FAIL: live page did not contain the Astro generator marker after 5 attempts."
+          exit 1
