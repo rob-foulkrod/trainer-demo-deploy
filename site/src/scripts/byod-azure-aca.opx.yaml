@@ -3,9 +3,9 @@ meta:
   title: "Trainer Demo Deploy — BYOD Azure scaffold"
   agent: orchestrator
   model: "Claude Opus 4.7"
-  context: "BYOD Azure — AZ-204 Container Apps"
+  context: "BYOD Azure — AI-200 Container Apps"
   task:
-    label: "Build BYOD Azure scaffold for AZ-204"
+    label: "Build BYOD Azure scaffold for AI-200"
     progress: [12, 12]
   diff:
     files:   12
@@ -23,7 +23,7 @@ steps:
         initials: tr
         gradient: ["#0078D4", "#8661C5"]
       body: |
-        Build me an Azure Container Apps demo with Service Bus producer and KEDA scaling. Target AZ-204.
+        Build me an Azure Container Apps demo with Service Bus producer and KEDA scaling. Target AI-200.
     timing: { typing: 2200, holdFor: 1400 }
 
   - agent:
@@ -35,7 +35,7 @@ steps:
       kind: search
       title: "searched template catalog"
       detail: "looking for `aca` + `servicebus`"
-      result: "Found 2 matches · using closest for AZ-204"
+      result: "Found 0 matches · using closest for AI-200"
     timing: { appearAfter: 250, holdFor: 1600 }
     advances: { task: 2 }
 
